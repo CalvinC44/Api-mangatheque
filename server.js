@@ -1,24 +1,59 @@
 const express = require("express");
-const bodyParser = require("body-parser");
+const cors = require("cors");
 
 const app = express();
 
+var corsOptions = {
+  origin: "http://localhost:8081"
+};
+
+app.use(cors(corsOptions));
+
+// parse requests of content-type - application/json
 app.use(express.json());
 
-const port = process.env.PORT || 5000;
+// parse requests of content-type - application/x-www-form-urlencoded
+app.use(express.urlencoded({ extended: true }));
 
-app.use(bodyParser.urlencoded({ extended: true }));
+// database
+const db = require("./app/models");
+const Role = db.role;
 
-app.use(bodyParser.json());
+// db.sequelize.sync();
+// force: true will drop the table if it already exists
+db.sequelize.sync({ force: true }).then(() => {
+  console.log("Drop and Resync Database with { force: true }");
+  initial();
+});
 
+// simple route
 app.get("/", (req, res) => {
-  res.send("Hello World");
+  res.json({ message: "Welcome" });
 });
 
-const userRoutes = require("./src/routes/user.routes");
+// routes
+require("./app/routes/auth.routes")(app);
+require("./app/routes/user.routes")(app);
 
-app.use("/api/mangatheque/user", userRoutes);
-
-app.listen(port, () => {
-  console.log(`Server is running on port: ${port}`);
+// set port, listen for requests
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}.`);
 });
+
+function initial() {
+  Role.create({
+    id: 1,
+    name: "user"
+  });
+
+  Role.create({
+    id: 2,
+    name: "moderator"
+  });
+
+  Role.create({
+    id: 3,
+    name: "admin"
+  });
+}
