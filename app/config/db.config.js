@@ -1,9 +1,9 @@
 module.exports = {
-  HOST: "51.159.24.214",
+  HOST: "51.159.112.187",
   USER: "mangatheque",
   PASSWORD: "myxdog-sAxvir-3magsy",
   DB: "mangatheque",
-  PORT: "11945",
+  PORT: "53491",
   dialect: "mysql",
   pool: {
     max: 5,
