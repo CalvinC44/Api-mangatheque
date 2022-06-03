@@ -1,6 +1,8 @@
-FROM node:12.4
+FROM node:latest
+RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
-COPY package *.json ./
+COPY package.json /usr/src/app/
 RUN npm install
-COPY . . 
-EXPOSE 5000
+COPY . /usr/src/app
+EXPOSE 8080
+CMD ["nmp", "start"]
