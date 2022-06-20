@@ -7,6 +7,8 @@ const Op = db.Sequelize.Op;
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
+/** ===Manga routes=== **/
+//create Manga
 exports.createManga = (req, res) => {
 	if (!req.body.name || !req.body.tome) {
 		res.status(400).send({ message: "Content can not be empty" });
@@ -27,7 +29,8 @@ exports.createManga = (req, res) => {
 		});
 };
 
-exports.getAllManga = (req, res) => {
+//get All Manga
+exports.findAllManga = (req, res) => {
 	Manga.findAll()
 		.then((data) => {
 			res.send(data);
@@ -39,13 +42,31 @@ exports.getAllManga = (req, res) => {
 		});
 };
 
-// Faire getAllUser
+//get manga with id
+exports.findOneManga = (req, res) => {
+	const id = req.params.id;
+	Manga.findByPk(id)
+		.then((data) => {
+			if (data) {
+				res.send(data);
+			} else {
+				res.status(404).send({
+					message: "Cannot find Manga with id=${id}"
+				});
+			}
+		})
+		.catch((err) => {
+			rs.status(500).send({
+				message: "Error retrieving Manga with id=" + id
+			});
+		});
+};
 
+//delete Manga
 exports.deleteManga = (req, res) => {
-	const nameManga = req.body.nameManga;
-	const tome = req.body.tome;
+	const id = req.params.id;
 	Manga.destroy({
-		where: { nameManga: nameManga, tome: tome }
+		where: { id: id }
 	})
 		.then((num) => {
 			if (num == 1) {
@@ -54,19 +75,23 @@ exports.deleteManga = (req, res) => {
 				});
 			} else {
 				res.send({
-					message: `Cannot delete nameManga=${nameManga} with tome=${tome}. Maybe Manga with this tome was not found!`
+					message: `Cannot delete nameManga=${id}. Maybe Manga was not found!`
 				});
 			}
 		})
 		.catch((err) => {
 			res.status(500).send({
-				message: "Could not delete" + nameManga + "number " + tome
+				message: "Could not delete Manga with id" + id
 			});
 		});
 };
 
-exports.createAddMangaToUser = (req, res) => {
-	// Save Manga to Database
+//update manga
+exports.updateManga;
+
+/** ===MangaUser routes=== **/
+// TODO: transform into add manga to user only
+exports.addMangaToUser = (req, res) => {
 	Manga.create({
 		name: req.body.name,
 		tome: req.body.tome
@@ -88,48 +113,6 @@ exports.createAddMangaToUser = (req, res) => {
 				// user role = 1
 				res.send({ message: "Manga created but not added to a user!" });
 			}
-		})
-		.catch((err) => {
-			res.status(500).send({ message: err.message });
-		});
-};
-
-exports.addMangaToUser = (req, res) => {
-	User.findOne({
-		where: {
-			username: req.body.username
-		}
-	})
-		.then((user) => {
-			if (!user) {
-				return res.status(404).send({ message: "User Not found." });
-			}
-			var passwordIsValid = bcrypt.compareSync(
-				req.body.password,
-				user.password
-			);
-			if (!passwordIsValid) {
-				return res.status(401).send({
-					accessToken: null,
-					message: "Invalid Password!"
-				});
-			}
-			var token = jwt.sign({ id: user.id }, config.secret, {
-				expiresIn: 86400 // 24 hours
-			});
-			var authorities = [];
-			user.getRoles().then((roles) => {
-				for (let i = 0; i < roles.length; i++) {
-					authorities.push("ROLE_" + roles[i].name.toUpperCase());
-				}
-				res.status(200).send({
-					id: user.id,
-					username: user.username,
-					email: user.email,
-					roles: authorities,
-					accessToken: token
-				});
-			});
 		})
 		.catch((err) => {
 			res.status(500).send({ message: err.message });

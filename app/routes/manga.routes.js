@@ -9,28 +9,30 @@ module.exports = function (app) {
 		next();
 	});
 
-    //createManga
+	/** ===Manga routes=== **/
+	//create Manga
+	app.post("/api/manga", controller.createManga);
 
-    //getAllManga
-	app.get("/api/manga/all", controller.getAllManga);
+	//find All Manga
+	app.get("/api/manga", controller.findAllManga);
 
-    //deleteManga
-    //createAddMangaToUser
-    //AddMangaToUser
+	//find manga with id
+	app.get("/api/manga/:id", controller.findMangaId);
 
+	//delete Manga
+	app.delete("/api/manga/:id", controller.deleteManga);
+
+	//update manga
+	app.put("api/manga/:id", controller.updateManga);
+
+	/** ===MangaUser routes=== **/
+	//AddMangaToUser
+	app.post("api/manga/userManga/:id");
+
+	//getMangaOfUser
 	app.get(
 		"/api/manga/userManga",
 		[authJwt.verifyToken, verifyCreateManga.checkDuplicateManga],
 		controller.userBoard
-	);
-	app.get(
-		"/api/manga/mod",
-		[authJwt.verifyToken, authJwt.isModerator],
-		controller.moderatorBoard
-	);
-	app.get(
-		"/api/test/admin",
-		[authJwt.verifyToken, authJwt.isAdmin],
-		controller.adminBoard
 	);
 };
