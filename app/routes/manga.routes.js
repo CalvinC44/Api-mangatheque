@@ -11,7 +11,11 @@ module.exports = function (app) {
 
 	/** ===Manga routes=== **/
 	//create Manga
-	app.post("/api/manga", controller.createManga);
+	app.post(
+		"/api/manga",
+		[verifyCreateManga.checkDuplicateManga],
+		controller.createManga
+	);
 
 	//find All Manga
 	app.get("/api/manga", controller.findAllManga);
@@ -23,16 +27,16 @@ module.exports = function (app) {
 	app.delete("/api/manga/:id", controller.deleteManga);
 
 	//update manga
-	app.put("api/manga/:id", controller.updateManga);
+	app.put("/api/manga/:id", controller.updateManga);
 
 	/** ===MangaUser routes=== **/
 	//AddMangaToUser
 	app.post("api/manga/userManga/:id");
 
 	//getMangaOfUser
-	app.get(
+	/* app.get(
 		"/api/manga/userManga",
 		[authJwt.verifyToken, verifyCreateManga.checkDuplicateManga],
 		controller.userBoard
-	);
+	); */
 };

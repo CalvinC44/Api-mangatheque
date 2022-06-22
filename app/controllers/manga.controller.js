@@ -10,13 +10,13 @@ var bcrypt = require("bcryptjs");
 /** ===Manga routes=== **/
 //create Manga
 exports.createManga = (req, res) => {
-	if (!req.body.name || !req.body.tome) {
+	if (!req.body.nameManga || !req.body.tome) {
 		res.status(400).send({ message: "Content can not be empty" });
 		return;
 	}
 
 	Manga.create({
-		name: req.body.nameManga,
+		nameManga: req.body.nameManga,
 		tome: req.body.tome
 	})
 		.then((data) => {
@@ -31,7 +31,11 @@ exports.createManga = (req, res) => {
 
 //get All Manga
 exports.findAllManga = (req, res) => {
-	Manga.findAll()
+	const nameManga = req.query.title;
+	var condition = nameManga
+		? { nameManga: { [Op.like]: `%${nameManga}%` } }
+		: null;
+	Manga.findAll({ where: condition })
 		.then((data) => {
 			res.send(data);
 		})
@@ -43,7 +47,7 @@ exports.findAllManga = (req, res) => {
 };
 
 //get manga with id
-exports.findOneManga = (req, res) => {
+exports.findMangaId = (req, res) => {
 	const id = req.params.id;
 	Manga.findByPk(id)
 		.then((data) => {
@@ -87,20 +91,40 @@ exports.deleteManga = (req, res) => {
 };
 
 //update manga
-exports.updateManga;
+exports.updateManga = (req, res) => {
+	const id = req.params.id;
+	Manga.update(req.body, { where: { id: id } })
+		.then((num) => {
+			if (num == 1) {
+				res.send({
+					message: "Manga was updated successfully"
+				});
+			} else {
+				res.send({
+					message:
+						"Cannot update Manga with id=${id}, maybe Manga was not found or req.body is empty"
+				});
+			}
+		})
+		.catch((err) => {
+			res.status(500).send({
+				message: "Error updating Manga with id=" + id
+			});
+		});
+};
 
 /** ===MangaUser routes=== **/
 // TODO: transform into add manga to user only
 exports.addMangaToUser = (req, res) => {
 	Manga.create({
-		name: req.body.name,
+		nameManga: req.body.nameManga,
 		tome: req.body.tome
 	})
 		.then((manga) => {
 			if (req.body.user) {
 				User.findAll({
 					where: {
-						name: {
+						nameManga: {
 							[Op.or]: req.body.user
 						}
 					}
