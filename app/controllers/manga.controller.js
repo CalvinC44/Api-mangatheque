@@ -31,7 +31,7 @@ exports.createManga = (req, res) => {
 
 //get All Manga
 exports.findAllManga = (req, res) => {
-	const nameManga = req.query.title;
+	const nameManga = req.query.nameManga;
 	var condition = nameManga
 		? { nameManga: { [Op.like]: `%${nameManga}%` } }
 		: null;
@@ -41,7 +41,7 @@ exports.findAllManga = (req, res) => {
 		})
 		.catch((err) => {
 			res.status(500).send({
-				message: err.message || "Some error occurred while creating the Manga"
+				message: err.message || "Some error occurred while retrieving the Manga"
 			});
 		});
 };
