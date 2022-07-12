@@ -1,7 +1,6 @@
 const db = require("../models");
 const config = require("../config/auth.config");
 const User = db.user;
-const Role = db.role;
 const Manga = db.manga;
 const Op = db.Sequelize.Op;
 var jwt = require("jsonwebtoken");
@@ -29,7 +28,7 @@ exports.createManga = (req, res) => {
 		});
 };
 
-//get All Manga
+//find All Manga
 exports.findAllManga = (req, res) => {
 	const nameManga = req.query.nameManga;
 	var condition = nameManga
@@ -46,7 +45,7 @@ exports.findAllManga = (req, res) => {
 		});
 };
 
-//get manga with id
+//find manga with id
 exports.findMangaId = (req, res) => {
 	const id = req.params.id;
 	Manga.findByPk(id)
@@ -54,7 +53,7 @@ exports.findMangaId = (req, res) => {
 			if (data) {
 				res.send(data);
 			} else {
-				res.status(404).send({
+				res.status(409).send({
 					message: "Cannot find Manga with id=${id}"
 				});
 			}
@@ -115,30 +114,81 @@ exports.updateManga = (req, res) => {
 
 /** ===MangaUser routes=== **/
 // TODO: transform into add manga to user only
+//AddMangaToUser
 exports.addMangaToUser = (req, res) => {
-	Manga.create({
-		nameManga: req.body.nameManga,
-		tome: req.body.tome
-	})
-		.then((manga) => {
-			if (req.body.user) {
-				User.findAll({
-					where: {
-						nameManga: {
-							[Op.or]: req.body.user
+	const nameManga = req.body.nameManga;
+	const tome = req.body.tome;
+	Manga.findOne({
+		where: { nameManga: nameManga, tome: tome }
+	}).then((manga) => {
+		if (manga === null) {
+			res
+				.status(500)
+				.send({ message: "Can't find manga with this name and tome" });
+		} else {
+			const mangaId = manga.mangaId;
+			const userId = 1;
+			User.findByPk(userId)
+				.then((user) => {
+					user.setManga(mangaId).then((num) => {
+						if (num == 1) {
+							res.send({
+								message: "Manga added successfully"
+							});
+						} else {
+							res.status(409).send({
+								message: "Cannot add Manga with id=${mangaId}"
+							});
 						}
-					}
-				}).then((manga) => {
-					manga.setUser(users).then(() => {
-						res.send({ message: "Manga was registered to user!" });
 					});
+				})
+				.catch((err) => {
+					res.status(500).send({ message: err.message });
 				});
+		}
+	});
+};
+
+//findMangaOfUser
+exports.findMangaOfUser = (req, res) => {
+	const username = req.body.username;
+	User.findAll({ where: { username }, include: Manga })
+		.then((data) => {
+			if (data) {
+				res.send(data);
 			} else {
-				// user role = 1
-				res.send({ message: "Manga created but not added to a user!" });
+				res.status(409).send({
+					message: "Cannot find Manga of the user:${username}"
+				});
 			}
 		})
 		.catch((err) => {
-			res.status(500).send({ message: err.message });
+			rs.status(500).send({
+				message: "Error retrieving Manga of the user: " + username
+			});
 		});
 };
+/*User.findOne({ where: { username: username } })
+		.then((user) => {
+			const idUser = user.id;
+			Manga.findAll({ where: { userId: idUser } })
+				.then((data) => {
+					if (data) {
+						res.send(data);
+					} else {
+						res.status(404).send({
+							message: "Cannot find Manga with user id=${idUser}"
+						});
+					}
+				})
+				.catch((err) => {
+					rs.status(500).send({
+						message: "Error retrieving Manga with user id=" + idUser
+					});
+				});
+		})
+		.catch((err) => {
+			rs.status(500).send({
+				message: "Error retrieving Manga with username" + username
+			});
+		});*/

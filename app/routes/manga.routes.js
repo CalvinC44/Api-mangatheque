@@ -11,11 +11,7 @@ module.exports = function (app) {
 
 	/** ===Manga routes=== **/
 	//create Manga
-	app.post(
-		"/api/manga",
-		[verifyCreateManga.checkDuplicateManga],
-		controller.createManga
-	);
+	app.post("/api/manga", controller.createManga);
 
 	//find All Manga
 	app.get("/api/manga", controller.findAllManga);
@@ -29,14 +25,9 @@ module.exports = function (app) {
 	//update manga
 	app.put("/api/manga/:id", controller.updateManga);
 
-	/** ===MangaUser routes=== **/
 	//AddMangaToUser
-	app.post("api/manga/userManga/:id");
+	app.post("/api/userManga", controller.addMangaToUser);
 
-	//getMangaOfUser
-	/* app.get(
-		"/api/manga/userManga",
-		[authJwt.verifyToken, verifyCreateManga.checkDuplicateManga],
-		controller.userBoard
-	); */
+	//findMangaOfUser
+	app.get("/api/userManga", controller.findMangaOfUser);
 };
